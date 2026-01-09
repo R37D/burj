@@ -2,6 +2,7 @@ from django.contrib import admin
 from .models import Company, Branch, FiscalYear
 from .models import SystemSettings
 from .models import UserProfile, Role, RolePermission
+from .models import DocumentType, DocumentSequence
 
 
 @admin.register(Company)
@@ -59,3 +60,20 @@ class RoleAdmin(admin.ModelAdmin):
 class RolePermissionAdmin(admin.ModelAdmin):
     list_display = ('role', 'permission')
     list_filter = ('role',)
+@admin.register(DocumentType)
+class DocumentTypeAdmin(admin.ModelAdmin):
+    list_display = ('code', 'name')
+    search_fields = ('code', 'name')
+
+
+@admin.register(DocumentSequence)
+class DocumentSequenceAdmin(admin.ModelAdmin):
+    list_display = (
+        'company',
+        'fiscal_year',
+        'document_type',
+        'prefix',
+        'last_number',
+        'is_active'
+    )
+    list_filter = ('company', 'fiscal_year', 'document_type', 'is_active')

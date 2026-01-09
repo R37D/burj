@@ -187,3 +187,55 @@ class RolePermission(models.Model):
 
     def __str__(self):
         return f"{self.role} -> {self.permission.codename}"
+class DocumentType(TimeStampedModel):
+    """
+    Represents a logical document type.
+    Example: Invoice, Journal Voucher, Purchase Order
+    """
+    code = models.CharField(max_length=20, unique=True)
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+
+    class Meta:
+        verbose_name = "Document Type"
+        verbose_name_plural = "Document Types"
+
+    def __str__(self):
+        return f"{self.code} - {self.name}"
+
+
+class DocumentSequence(TimeStampedModel):
+    """
+    Controls document numbering per company, fiscal year, and document type.
+    """
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        related_name='document_sequences'
+    )
+    fiscal_year = models.ForeignKey(
+        FiscalYear,
+        on_delete=models.CASCADE,
+        related_name='document_sequences'
+    )
+    document_type = models.ForeignKey(
+        DocumentType,
+        on_delete=models.CASCADE,
+        related_name='sequences'
+    )
+
+    prefix = models.CharField(
+        max_length=50,
+        help_text="Example: BURJ-INV-2026"
+    )
+    last_number = models.PositiveIntegerField(default=0)
+    padding = models.PositiveSmallIntegerField(default=6)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        unique_together = ('company', 'fiscal_year', 'document_type')
+        verbose_name = "Document Sequence"
+        verbose_name_plural = "Document Sequences"
+
+    def __str__(self):
+        return f"{self.prefix}"
