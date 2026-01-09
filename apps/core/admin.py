@@ -1,5 +1,6 @@
 from django.contrib import admin
 from .models import Company, Branch, FiscalYear
+from .models import SystemSettings
 
 
 @admin.register(Company)
@@ -35,3 +36,7 @@ class FiscalYearAdmin(admin.ModelAdmin):
             ).exclude(pk=obj.pk).update(is_active=False)
 
         super().save_model(request, obj, form, change)
+@admin.register(SystemSettings)
+class SystemSettingsAdmin(admin.ModelAdmin):
+    list_display = ('company', 'default_currency', 'decimal_places', 'is_active')
+    list_filter = ('is_active',)

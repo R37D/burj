@@ -73,3 +73,42 @@ class FiscalYear(TimeStampedModel):
 
     def __str__(self):
         return f"{self.company.code} - {self.year}"
+class SystemSettings(TimeStampedModel):
+    """
+    Company-level system configuration.
+    Only one settings record should exist per company.
+    """
+    company = models.OneToOneField(
+        Company,
+        on_delete=models.CASCADE,
+        related_name='settings'
+    )
+
+    # General
+    default_currency = models.CharField(
+        max_length=10,
+        default='SAR',
+        help_text="ISO currency code (e.g., SAR, USD)"
+    )
+    decimal_places = models.PositiveSmallIntegerField(
+        default=2
+    )
+
+    date_format = models.CharField(
+        max_length=20,
+        default='YYYY-MM-DD'
+    )
+
+    # Document numbering
+    document_start_number = models.PositiveIntegerField(
+        default=1
+    )
+
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = "System Settings"
+        verbose_name_plural = "System Settings"
+
+    def __str__(self):
+        return f"Settings - {self.company.code}"
