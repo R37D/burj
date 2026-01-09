@@ -1,6 +1,7 @@
 from django.contrib import admin
 from .models import Company, Branch, FiscalYear
 from .models import SystemSettings
+from .models import UserProfile, Role, RolePermission
 
 
 @admin.register(Company)
@@ -40,3 +41,21 @@ class FiscalYearAdmin(admin.ModelAdmin):
 class SystemSettingsAdmin(admin.ModelAdmin):
     list_display = ('company', 'default_currency', 'decimal_places', 'is_active')
     list_filter = ('is_active',)
+@admin.register(UserProfile)
+class UserProfileAdmin(admin.ModelAdmin):
+    list_display = ('user', 'company', 'branch', 'is_active')
+    list_filter = ('company', 'branch', 'is_active')
+    search_fields = ('user__username',)
+
+
+@admin.register(Role)
+class RoleAdmin(admin.ModelAdmin):
+    list_display = ('name', 'company', 'is_active')
+    list_filter = ('company', 'is_active')
+    search_fields = ('name',)
+
+
+@admin.register(RolePermission)
+class RolePermissionAdmin(admin.ModelAdmin):
+    list_display = ('role', 'permission')
+    list_filter = ('role',)

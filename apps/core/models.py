@@ -1,5 +1,5 @@
 from django.db import models
-
+from django.contrib.auth.models import User, Permission
 
 class TimeStampedModel(models.Model):
     """
@@ -112,3 +112,78 @@ class SystemSettings(TimeStampedModel):
 
     def __str__(self):
         return f"Settings - {self.company.code}"
+class UserProfile(TimeStampedModel):
+    """
+    Operational context for a user.
+    Defines which company/branch the user belongs to.
+    """
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name='profile'
+    )
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        related_name='users'
+    )
+    branch = models.ForeignKey(
+        Branch,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='users'
+    )
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = "User Profile"
+        verbose_name_plural = "User Profiles"
+
+    def __str__(self):
+        return f"{self.user.username} ({self.company.code})"
+
+
+class Role(TimeStampedModel):
+    """
+    Company-scoped role.
+    Example: Accountant, Project Manager, HR Officer
+    """
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        related_name='roles'
+    )
+    name = models.CharField(max_length=100)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        unique_together = ('company', 'name')
+        verbose_name = "Role"
+        verbose_name_plural = "Roles"
+
+    def __str__(self):
+        return f"{self.company.code} - {self.name}"
+
+
+class RolePermission(models.Model):
+    """
+    Maps roles to Django permissions.
+    """
+    role = models.ForeignKey(
+        Role,
+        on_delete=models.CASCADE,
+        related_name='permissions'
+    )
+    permission = models.ForeignKey(
+        Permission,
+        on_delete=models.CASCADE
+    )
+
+    class Meta:
+        unique_together = ('role', 'permission')
+        verbose_name = "Role Permission"
+        verbose_name_plural = "Role Permissions"
+
+    def __str__(self):
+        return f"{self.role} -> {self.permission.codename}"
