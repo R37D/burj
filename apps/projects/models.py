@@ -54,3 +54,38 @@ class Project(TimeStampedModel):
 
     def __str__(self):
         return f"{self.code} - {self.name}"
+class ProjectCostCenter(TimeStampedModel):
+    """
+    Work Breakdown Structure (WBS) / Cost Center within a project.
+    """
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE,
+        related_name='cost_centers'
+    )
+
+    code = models.CharField(max_length=50)
+    name = models.CharField(max_length=255)
+
+    parent = models.ForeignKey(
+        'self',
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name='children'
+    )
+
+    is_postable = models.BooleanField(
+        default=True,
+        help_text="If false, cannot be used for financial postings"
+    )
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        unique_together = ('project', 'code')
+        ordering = ('code',)
+        verbose_name = "Project Cost Center"
+        verbose_name_plural = "Project Cost Centers"
+
+    def __str__(self):
+        return f"{self.project.code} - {self.code}"
