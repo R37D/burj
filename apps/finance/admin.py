@@ -17,6 +17,8 @@ class AccountAdmin(admin.ModelAdmin):
 class JournalLineInline(admin.TabularInline):
     model = JournalLine
     extra = 1
+    autocomplete_fields = ('account', 'project', 'cost_center')
+
 
 
 @admin.register(JournalEntry)

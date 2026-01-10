@@ -6,6 +6,7 @@ from apps.core.models import FiscalYear
 from apps.core.models import Company
 from apps.core.models import TimeStampedModel
 from apps.core.services import get_next_document_number
+from apps.projects.models import Project, ProjectCostCenter
 
 class AccountType(models.Model):
     """
@@ -128,6 +129,7 @@ class JournalEntry(TimeStampedModel):
 class JournalLine(models.Model):
     """
     Accounting journal line (debit/credit).
+    Supports project and cost center allocation.
     """
     journal_entry = models.ForeignKey(
         JournalEntry,
@@ -139,6 +141,22 @@ class JournalLine(models.Model):
         on_delete=models.PROTECT,
         related_name='journal_lines'
     )
+
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name='journal_lines'
+    )
+    cost_center = models.ForeignKey(
+        ProjectCostCenter,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name='journal_lines'
+    )
+
     debit = models.DecimalField(
         max_digits=14,
         decimal_places=2,
@@ -160,6 +178,16 @@ class JournalLine(models.Model):
 
         if not self.account.is_postable:
             raise ValidationError("Account is not postable.")
+
+        if self.cost_center:
+            if not self.project:
+                raise ValidationError("Cost center requires a project.")
+
+            if self.cost_center.project != self.project:
+                raise ValidationError("Cost center does not belong to selected project.")
+
+            if not self.cost_center.is_postable:
+                raise ValidationError("Cost center is not postable.")
 
     def __str__(self):
         return f"{self.account} | D:{self.debit} C:{self.credit}"
