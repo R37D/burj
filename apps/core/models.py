@@ -1,6 +1,11 @@
 from django.db import models
 from django.contrib.auth.models import User, Permission
 
+
+# =========================================================
+# Base
+# =========================================================
+
 class TimeStampedModel(models.Model):
     """
     Abstract base model with created & updated timestamps.
@@ -12,6 +17,10 @@ class TimeStampedModel(models.Model):
     class Meta:
         abstract = True
 
+
+# =========================================================
+# Organization Structure
+# =========================================================
 
 class Company(TimeStampedModel):
     """
@@ -63,7 +72,9 @@ class FiscalYear(TimeStampedModel):
     year = models.PositiveIntegerField()
     start_date = models.DateField()
     end_date = models.DateField()
+
     is_active = models.BooleanField(default=False)
+    is_closed = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ('company', 'year')
@@ -73,6 +84,12 @@ class FiscalYear(TimeStampedModel):
 
     def __str__(self):
         return f"{self.company.code} - {self.year}"
+
+
+# =========================================================
+# System Settings
+# =========================================================
+
 class SystemSettings(TimeStampedModel):
     """
     Company-level system configuration.
@@ -90,19 +107,11 @@ class SystemSettings(TimeStampedModel):
         default='SAR',
         help_text="ISO currency code (e.g., SAR, USD)"
     )
-    decimal_places = models.PositiveSmallIntegerField(
-        default=2
-    )
-
-    date_format = models.CharField(
-        max_length=20,
-        default='YYYY-MM-DD'
-    )
+    decimal_places = models.PositiveSmallIntegerField(default=2)
+    date_format = models.CharField(max_length=20, default='YYYY-MM-DD')
 
     # Document numbering
-    document_start_number = models.PositiveIntegerField(
-        default=1
-    )
+    document_start_number = models.PositiveIntegerField(default=1)
 
     is_active = models.BooleanField(default=True)
 
@@ -112,6 +121,12 @@ class SystemSettings(TimeStampedModel):
 
     def __str__(self):
         return f"Settings - {self.company.code}"
+
+
+# =========================================================
+# Users & RBAC
+# =========================================================
+
 class UserProfile(TimeStampedModel):
     """
     Operational context for a user.
@@ -187,6 +202,12 @@ class RolePermission(models.Model):
 
     def __str__(self):
         return f"{self.role} -> {self.permission.codename}"
+
+
+# =========================================================
+# Document Management
+# =========================================================
+
 class DocumentType(TimeStampedModel):
     """
     Represents a logical document type.
@@ -226,7 +247,7 @@ class DocumentSequence(TimeStampedModel):
 
     prefix = models.CharField(
         max_length=50,
-        help_text="Example: BURJ-INV-2026"
+        help_text="Example: BURJ-JV-2026"
     )
     last_number = models.PositiveIntegerField(default=0)
     padding = models.PositiveSmallIntegerField(default=6)
