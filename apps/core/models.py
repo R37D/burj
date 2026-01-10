@@ -93,15 +93,25 @@ class FiscalYear(TimeStampedModel):
 class SystemSettings(TimeStampedModel):
     """
     Company-level system configuration.
-    Only one settings record should exist per company.
+    Controls accounting behavior and numbering policies.
+    One record per company.
     """
+
+    ACCOUNTING_TRIGGER_CHOICES = (
+        ('GR', 'Goods Receipt'),
+        ('VI', 'Vendor Invoice'),
+        ('BOTH', 'Goods Receipt & Invoice'),
+    )
+
     company = models.OneToOneField(
         Company,
         on_delete=models.CASCADE,
         related_name='settings'
     )
 
+    # -------------------------------
     # General
+    # -------------------------------
     default_currency = models.CharField(
         max_length=10,
         default='SAR',
@@ -110,7 +120,19 @@ class SystemSettings(TimeStampedModel):
     decimal_places = models.PositiveSmallIntegerField(default=2)
     date_format = models.CharField(max_length=20, default='YYYY-MM-DD')
 
-    # Document numbering
+    # -------------------------------
+    # Accounting Behavior
+    # -------------------------------
+    accounting_trigger = models.CharField(
+        max_length=10,
+        choices=ACCOUNTING_TRIGGER_CHOICES,
+        default='BOTH',
+        help_text="Defines when accounting entries are generated"
+    )
+
+    # -------------------------------
+    # Document Numbering
+    # -------------------------------
     document_start_number = models.PositiveIntegerField(default=1)
 
     is_active = models.BooleanField(default=True)
@@ -259,4 +281,4 @@ class DocumentSequence(TimeStampedModel):
         verbose_name_plural = "Document Sequences"
 
     def __str__(self):
-        return f"{self.prefix}"
+        return self.prefix
